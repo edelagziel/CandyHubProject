@@ -10,6 +10,8 @@ public class MatchManager : MonoBehaviour
     [SerializeField] private int _width; // Board width
     [SerializeField] private int _height; // Board height
     private GameObject[,] _board; // Board grid
+    [Space(10)]
+    [SerializeField] private TileType _currentChoose; // Current attack tool
 
 
     private void Start()
@@ -54,6 +56,7 @@ public class MatchManager : MonoBehaviour
         // Set random type for tile
         if (_tilesProfile[randomProfile] != null && _tilesProfile[randomProfile].Icon != null)
         {
+            tile.GetComponent<TileManager>()._tileProfile = _tilesProfile[randomProfile];
             tile.transform.GetChild(0).transform.GetChild(0).transform.GetComponentInChildren<SpriteRenderer>().sprite = _tilesProfile[randomProfile].Icon;
         }
     }
@@ -65,44 +68,100 @@ public class MatchManager : MonoBehaviour
         float yPos = (float)(_board.GetLength(1) - 1) / 2;
 
         // Set camera backward to see all board
-        //float zPos = (_board.GetLength(0) * 2) * -1;
-        Camera.main.orthographicSize = (float)_board.GetLength(0) + 1;
+        float zPos = (_board.GetLength(0) * 2) * -1;
 
         // Set the new position to main camera
-        Camera.main.transform.position = new Vector3(xPos, yPos, Camera.main.transform.position.z);
+        Camera.main.transform.position = new Vector3(xPos, yPos, zPos);
     }
+
+    public void ChooseAttack_Rock() => _currentChoose = TileType.Rock;
+
+    public void ChooseAttack_Paper() => _currentChoose = TileType.Paper;
+
+    public void ChooseAttack_Scissors() => _currentChoose = TileType.Scissors;
 
     private void ClickOnTile()
     {
+        // Check if player choose attack tool
+        if (_currentChoose == TileType.None) { return; }
+
+
         // Check if the left mouse button is pressed down
         if (Input.GetMouseButtonDown(0))
         {
-            // Convert mouse pos to world pos (XY plane only)
-            Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 mousePos2D = new Vector2(mouseWorldPos.x, mouseWorldPos.y);
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-            // Check which 2D collider is at that position
-            Collider2D hit = Physics2D.OverlapPoint(mousePos2D);
+            // Define the board plane (XY plane at Z = 0)
+            Plane xyPlane = new Plane(Vector3.forward, Vector3.zero);
 
-            // Check if raycast hit a tile collider
-            if (hit != null)
+            if (xyPlane.Raycast(ray, out float distance))
             {
-                GameObject clickedTile = hit.gameObject;
+                // Get world point where the ray hits the plane
+                Vector3 worldPoint = ray.GetPoint(distance);
 
-                // DEBUG
-                //Debug.Log($"Clicked tile at world pos: {clickedTile.transform.position}");
-                StartCoroutine(MarkTile(clickedTile));
+                // Use OverlapPoint to detect which tile is here
+                Collider2D hit = Physics2D.OverlapPoint(worldPoint);
+
+                // Check if raycast hit a tile collider
+                if (hit != null)
+                {
+                    StartCoroutine(CheckResult(hit.gameObject));
+                }
             }
         }
     }
 
-    IEnumerator MarkTile(GameObject tile)
+    IEnumerator CheckResult(GameObject tile)
     {
+        // Get selected tile sprite renderer
         SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
+
+        // Show selected tile and disable all board
+        //ChangeBoardActive(false);
         sr.color = Color.green;
 
-        yield return new WaitForSeconds(1);
+        // Check for winner
+        TileType opponentTileType = tile.GetComponentInParent<TileManager>()._tileProfile.TileType;
+        switch (_currentChoose)
+        {
+            case TileType.Rock:
+                if (opponentTileType == TileType.Rock) { Debug.Log("Tie"); }
+                else if (opponentTileType == TileType.Paper) { Debug.Log("Lose"); }
+                else if (opponentTileType == TileType.Scissors) { Debug.Log("Win"); }
+                break;
 
+            case TileType.Paper:
+                if (opponentTileType == TileType.Rock) { Debug.Log("Win"); }
+                else if (opponentTileType == TileType.Paper) { Debug.Log("Tie"); }
+                else if (opponentTileType == TileType.Scissors) { Debug.Log("Lose"); }
+                break;
+
+            case TileType.Scissors:
+                if (opponentTileType == TileType.Rock) { Debug.Log("Lose"); }
+                else if (opponentTileType == TileType.Paper) { Debug.Log("Win"); }
+                else if (opponentTileType == TileType.Scissors) { Debug.Log("Tie"); }
+                break;
+        }
+
+        // wait 2 seconds
+        yield return new WaitForSeconds(2);
+
+        // Reset current attack tool
+        _currentChoose = TileType.None;
+
+        // Release selected tile and enable all board
+        //ChangeBoardActive(true);
         sr.color = Color.white;
+    }
+
+    private void ChangeBoardActive(bool toEnable)
+    {
+        for (int i = 0; i < _height; i++)
+        {
+            for (int j = 0; j < _width; j++)
+            {
+                _board[j, i].gameObject.SetActive(toEnable);
+            }
+        }
     }
 }
