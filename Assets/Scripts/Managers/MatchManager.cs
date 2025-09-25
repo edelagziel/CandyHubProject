@@ -1,17 +1,23 @@
 ﻿using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class MatchManager : MonoBehaviour
 {
-    [Header("Grid:")]
+    [Header("Tiles:")]
     [SerializeField] private TileProfileSO[] _tilesProfile; // All tiles profile
     [SerializeField] private GameObject _tilePrefab; // Board tile prefab
-    [Space(10)]
+    
+    [Header("Grid:")]
     [SerializeField] private int _width; // Board width
     [SerializeField] private int _height; // Board height
     private GameObject[,] _board; // Board grid
-    [Space(10)]
+
+    [Header("Player:")]
     [SerializeField] private TileType _currentChoose; // Current attack tool
+
+    [Header("UI:")]
+    [SerializeField] private TextMeshProUGUI resultText;
 
 
     private void Start()
@@ -125,29 +131,29 @@ public class MatchManager : MonoBehaviour
         switch (_currentChoose)
         {
             case TileType.Rock:
-                if (opponentTileType == TileType.Rock) { Debug.Log("Tie"); }
-                else if (opponentTileType == TileType.Paper) { Debug.Log("Lose"); }
-                else if (opponentTileType == TileType.Scissors) { Debug.Log("Win"); }
+                if (opponentTileType == TileType.Rock) { resultText.text = "Tie"; }
+                else if (opponentTileType == TileType.Paper) { resultText.text = "Lose"; }
+                else if (opponentTileType == TileType.Scissors) { resultText.text = "Win"; }
                 break;
 
             case TileType.Paper:
-                if (opponentTileType == TileType.Rock) { Debug.Log("Win"); }
-                else if (opponentTileType == TileType.Paper) { Debug.Log("Tie"); }
-                else if (opponentTileType == TileType.Scissors) { Debug.Log("Lose"); }
+                if (opponentTileType == TileType.Rock) { resultText.text = "Win"; }
+                else if (opponentTileType == TileType.Paper) { resultText.text = "Tie"; }
+                else if (opponentTileType == TileType.Scissors) { resultText.text = "Lose"; }
                 break;
 
             case TileType.Scissors:
-                if (opponentTileType == TileType.Rock) { Debug.Log("Lose"); }
-                else if (opponentTileType == TileType.Paper) { Debug.Log("Win"); }
-                else if (opponentTileType == TileType.Scissors) { Debug.Log("Tie"); }
+                if (opponentTileType == TileType.Rock) { resultText.text = "Lose"; }
+                else if (opponentTileType == TileType.Paper) { resultText.text = "Win"; }
+                else if (opponentTileType == TileType.Scissors) { resultText.text = "Tie"; }
                 break;
         }
 
-        // wait 2 seconds
-        yield return new WaitForSeconds(2);
-
         // Reset current attack tool
         _currentChoose = TileType.None;
+
+        // wait 2 seconds
+        yield return new WaitForSeconds(2);
 
         // Release selected tile and enable all board
         //ChangeBoardActive(true);

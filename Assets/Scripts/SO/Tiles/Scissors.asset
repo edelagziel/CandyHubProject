@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 459147e39daad3c428ae6030c664b5ab, type: 3}
   m_Name: Scissors
   m_EditorClassIdentifier: 
-  TileType: 2
+  TileType: 3
   Icon: {fileID: 21300000, guid: f40868adc33834541b397342c5500ef2, type: 3}
