@@ -65,7 +65,7 @@ public class MatchManager : MonoBehaviour
             tile.GetComponent<TileManager>()._tileProfile = _tilesProfile[randomProfile];
             tile.transform.GetChild(0).transform.GetChild(0).transform.GetComponentInChildren<SpriteRenderer>().sprite = _tilesProfile[randomProfile].Icon;
         }
-    }
+    } // DEBUG
 
     private void SetCameraPos()
     {
